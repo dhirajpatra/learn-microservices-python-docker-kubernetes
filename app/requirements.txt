@@ -1,0 +1,26 @@
+# requirements.txt 
+# for better tuning kindly update the versions of each lib installing
+
+# FastAPI and related dependencies
+fastapi[all]
+uvicorn
+pydentic
+
+# general
+python-dotenv
+
+# SQLAlchemy and Alembic for database management
+sqlalchemy
+alembic
+psycopg2-binary
+
+# Celery for background task processing
+celery[redis]
+
+# Pytest for testing
+pytest
+
+# graphql
+graphene
+starlette-graphene3
+

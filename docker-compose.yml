@@ -1,0 +1,77 @@
+version: '3.8'  # Use a specific version for clarity
+
+services:
+  rabbitmq:  
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # For management UI
+    env_file:
+      - .env.rabbitmq
+
+  db:  
+    container_name: db
+    image: postgres:14
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./.env:/app/.env
+
+  redis:  
+    container_name: redis
+    image: redis:6  
+    ports:
+      - "6379:6379"
+
+  web:
+    container_name: web
+    build:
+      context: ./app  
+      dockerfile: Dockerfile.web  
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db  
+      - rabbitmq
+      - celery
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DB_URI}  
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}  
+    volumes:
+      - ./app/entrypoint.sh:/entrypoint.sh 
+      - ./.env:/app/.env
+
+  celery:
+    container_name: celery
+    build:
+      context: ./app 
+      dockerfile: Dockerfile.celery  
+    # command: celery -A app.celery_tasks worker --loglevel=info
+    depends_on:
+      - db
+      - rabbitmq 
+      - redis
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL} 
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0  # Use Redis as result backend
+    volumes:
+      - ./app/celery_tasks:/app/celery_tasks  # (If necessary for task loading)
+      - ./.env:/app/.env
+
+volumes:
+  db-data:  # Volume for database persistence
+
+networks:
+  default:
+    name: myproject-network

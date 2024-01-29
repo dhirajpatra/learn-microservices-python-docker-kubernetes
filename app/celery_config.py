@@ -1,0 +1,19 @@
+# celery_config.py
+from kombu import Exchange, Queue
+
+
+CELERY_BROKER_URL = "amqp://admin:password@rabbitmq:5672/"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = "UTC"
+CELERY_DEFAULT_QUEUE = "default"
+CELERY_QUEUES = (Queue("default", Exchange("default"), routing_key="default"),)
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True 
+CELERY_BROKER_CONNECTION_RETRY_MAX_RETRIES = 100
+CELERY_BROKER_CONNECTION_RETRY_INTERVAL = 2
+
+
