@@ -190,6 +190,47 @@ There are many we can, from putting all into .env or more secure place. Also mak
 
    Replace `<your-result-key>` with the actual key you want to inspect.
 
+### GraphQl
+
+http://localhost:8000/graphql
+
+Then write the query to get the result
+```
+{
+    products {
+        id
+        partNumber
+        branchId
+    }
+}
+```
+reponse
+```
+{
+  "data": {
+    "products": [
+      {
+        "id": 9,
+        "partNumber": "0163D00007",
+        "branchId": "CIN"
+      },
+      {
+        "id": 1,
+        "partNumber": "0121F00548",
+        "branchId": "TUC"
+      },
+      {
+        "id": 2,
+        "partNumber": "0121G00047P",
+        "branchId": "TUC"
+      },
+      .
+      .
+      .
+  }
+}
+```
+
 ### Folder and File Tree
 
 ```

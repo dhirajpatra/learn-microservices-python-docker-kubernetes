@@ -33,8 +33,8 @@ def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[dict]:
     # Convert SQLAlchemy objects to dictionaries
     product_dicts = []
 
-    for product in products:
-        product_dict = {
+    product_dicts = [
+        {
             "id": product.id,
             "part_number": product.part_number,
             "branch_id": product.branch_id,
@@ -43,7 +43,9 @@ def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[dict]:
             "createdat": product.createdat,
             "updatedat": product.updatedat,
         }
-        product_dicts.append(product_dict)
+        for product in products
+    ]
+
 
     return product_dicts
 

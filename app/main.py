@@ -36,11 +36,11 @@ app.add_middleware(
 
 app.include_router(product.router)
 
-# add graphql route using add_route method
+# Add GraphQL route using add_route method
 app.add_route("/graphql", GraphQLApp(
     schema=product.Schema(query=product.Query), 
     on_get=make_graphiql_handler()
-    ))  
+)) 
 
 @app.get("/")
 async def live():

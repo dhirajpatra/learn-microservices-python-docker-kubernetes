@@ -2,7 +2,7 @@
 import schemas
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status, APIRouter, UploadFile, File
-from database import get_db, DATABASE_URL
+from database import get_db, get_db_graphql, DATABASE_URL
 from crud import get_products
 from celery_tasks import process_csv
 import logging
@@ -16,11 +16,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Products"], prefix="/products")
 
 class Query(ObjectType):
+    """GraphQl query class for resolver 
+
+    Args:
+        ObjectType (_type_): _description_
+
+    Raises:
+        HTTPException: _description_
+
+    Returns:
+        _type_: _description_
+    """
     products = List(schemas.ProductSchema, skip=String(), limit=String())
     
-    async def resolve_products(self, info, skip: int = 0, limit: int = 10, db=Depends(get_db)):
+    async def resolve_products(self, info, skip: int = 0, limit: int = 10):
         try:
             # calling from crud.py
+            db = get_db_graphql() # get the DB session
             products = get_products(db, skip=skip, limit=limit)
             return products
         except Exception as e:

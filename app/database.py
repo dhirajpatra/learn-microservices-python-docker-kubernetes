@@ -40,3 +40,18 @@ def get_db():
     finally:
         db.close()
         
+        
+def get_db_graphql():
+    """In the context of FastAPI and dependency injection, when a route function depends on get_db, 
+    FastAPI will execute get_db() to get a database session (db). 
+    Using yield db allows FastAPI to provide the database session to the route function and ensure that 
+    the session is properly closed (db.close()) after the route function finishes its execution.
+
+    Yields:
+        _type_: _description_
+    """
+    db = SessionLocal()
+    try:
+        return db
+    finally:
+        db.close()
