@@ -1,4 +1,5 @@
 # product.py
+import string
 import schemas
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status, APIRouter, UploadFile, File
@@ -27,13 +28,17 @@ class Query(ObjectType):
     Returns:
         _type_: _description_
     """
-    products = List(schemas.ProductSchema, skip=String(), limit=String())
+    products = List(schemas.ProductSchema, skip=String(), limit=String(), part_number=String(), branch_id=String())
     
-    async def resolve_products(self, info, skip: int = 0, limit: int = 10):
+    async def resolve_products(self, info, skip: int = 0, limit: int = 10, part_number: str = None, branch_id = None):
         try:
-            # calling from crud.py
             db = get_db_graphql() # get the DB session
-            products = get_products(db, skip=skip, limit=limit)
+            
+            # calling from crud.py
+            if part_number and branch_id:
+                products = get_products(db, part_number=part_number, branch_id=branch_id)
+            else:
+                products = get_products(db, skip=skip, limit=limit)
             return products
         except Exception as e:
             logger.error("Error processing products db: %s", str(e))

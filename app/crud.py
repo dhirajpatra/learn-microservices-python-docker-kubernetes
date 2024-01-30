@@ -1,5 +1,6 @@
 # crud.py
 from datetime import datetime
+import string
 from sqlalchemy.exc import IntegrityError  # Import IntegrityError
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -15,7 +16,13 @@ logging.basicConfig(filename='web.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
-def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[dict]:
+def get_products(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 10, 
+    part_number: str = None, 
+    branch_id: str = None
+) -> List[dict]:
     """Retrieves a list of product dictionaries from the database.
 
     Args:
@@ -23,31 +30,54 @@ def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[dict]:
         skip: Number of products to skip from the beginning of the result set.
             Defaults to 0.
         limit: Maximum number of products to return. Defaults to 10.
+        part_number: Part number for querying a specific product. Defaults to None.
+        branch_id: Branch ID for querying a specific product. Defaults to None.
 
     Returns:
         A list of product dictionaries, where each dictionary represents a product's attributes.
     """
-    # Query the database for products, applying pagination using offset and limit
-    products = db.query(Product).offset(skip).limit(limit).all()
-    
     # Convert SQLAlchemy objects to dictionaries
     product_dicts = []
-
-    product_dicts = [
-        {
-            "id": product.id,
-            "part_number": product.part_number,
-            "branch_id": product.branch_id,
-            "part_price": product.part_price,
-            "short_desc": product.short_desc,
-            "createdat": product.createdat,
-            "updatedat": product.updatedat,
-        }
-        for product in products
-    ]
-
-
+        
+    # Check if it is for a particular product
+    if part_number and branch_id:
+        product = db.query(Product).filter(
+            Product.part_number == part_number
+        ).filter(
+            Product.branch_id == branch_id
+        ).first()
+        if product:
+            product_dict = {
+                "id": product.id,
+                "part_number": product.part_number,
+                "branch_id": product.branch_id,
+                "part_price": product.part_price,
+                "short_desc": product.short_desc,
+                "createdat": product.createdat,
+                "updatedat": product.updatedat,
+            }
+            return [product_dict]
+        else:
+            return []
+    else:
+        # Query the database for products, applying pagination using offset and limit
+        products = db.query(Product).offset(skip).limit(limit).all()
+        
+        product_dicts = [
+            {
+                "id": product.id,
+                "part_number": product.part_number,
+                "branch_id": product.branch_id,
+                "part_price": product.part_price,
+                "short_desc": product.short_desc,
+                "createdat": product.createdat,
+                "updatedat": product.updatedat,
+            }
+            for product in products
+        ]
+        
     return product_dicts
+
 
 def insert_products_from_csv(db: Session, content: str):
     """Insert or update the products table from a CSV. 

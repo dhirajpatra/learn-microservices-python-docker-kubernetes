@@ -229,6 +229,17 @@ reponse
       .
   }
 }
+
+or you can call for specific product
+
+{
+    products(partNumber: "0121F00548", branchId: "TUC") {
+        id
+        partNumber
+        branchId
+    }
+}
+
 ```
 
 ### Folder and File Tree
