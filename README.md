@@ -1,4 +1,4 @@
-# Microservices CSV Processing with Docker, FastAPI, Celery, PgSql, GraphQL, Rabbitmq, Redis
+# Microservices CSV Processing with Docker, FastAPI, Celery, PgSql, GraphQL, Elasticsearch, Rabbitmq, Redis
 
 This a representation level template application to show how can we use microservices application using non blocking architecture.
 

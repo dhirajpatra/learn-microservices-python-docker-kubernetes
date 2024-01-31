@@ -24,3 +24,5 @@ pytest
 graphene
 starlette-graphene3
 
+# elasticsearch
+elasticsearch

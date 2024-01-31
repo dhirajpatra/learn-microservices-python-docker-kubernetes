@@ -1,18 +1,26 @@
 # product.py
-import string
-import schemas
-from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status, APIRouter, UploadFile, File
-from database import get_db, get_db_graphql, DATABASE_URL
+from sqlalchemy.orm import Session
+from elasticsearch import Elasticsearch
+
+import logging
+from graphene import ObjectType, List, String, Schema
+
+from database import get_db_graphql, get_db, DATABASE_URL
 from crud import get_products
 from celery_tasks import process_csv
-import logging
-from graphene import ObjectType, Schema, String, List
+import schemas
 
 
 # Configure the logger (adjust settings as needed)
 logging.basicConfig(filename='web.log', level=logging.ERROR)
 logger = logging.getLogger(__name__)
+
+# elasticsearch
+es = Elasticsearch(hosts=["http://elasticsearch:9200"])
+
+# Create "products" index
+index_name = "products"
 
 router = APIRouter(tags=["Products"], prefix="/products")
 
@@ -34,12 +42,39 @@ class Query(ObjectType):
         try:
             db = get_db_graphql() # get the DB session
             
-            # calling from crud.py
+            # Check if both part_number and branch_id are provided for filtering
             if part_number and branch_id:
-                products = get_products(db, part_number=part_number, branch_id=branch_id)
+                # Elasticsearch query to filter products based on part_number and branch_id
+                es_query = {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {"match": {"part_number": part_number}},
+                                {"match": {"branch_id": branch_id}}
+                            ]
+                        }
+                    },
+                    "size": limit  # Specify the limit for the number of results
+                }
+                logger.info(f"Elasticsearch query: {es_query}")
+
+                # Execute the Elasticsearch query and retrieve the results
+                es_result = es.search(index="products", body=es_query)
+                logger.info(f"Elasticsearch result: {es_result}")
+
+                # Extract the source data from Elasticsearch hits
+                products = [hit["_source"] for hit in es_result["hits"]["hits"]]
+                logger.info(f"Filtered products: {products}")
             else:
+                # If no filtering parameters are provided, fetch all products using get_products from crud.py
                 products = get_products(db, skip=skip, limit=limit)
+
+            # Return the filtered or all products based on the conditions
             return products
+
+        except ConnectionError as ce:
+            logger.error("Connection error to Elasticsearch: %s", str(ce))
+            raise HTTPException(status_code=500, detail="Error connecting to Elasticsearch. Check Elasticsearch status and connection details.")
         except Exception as e:
             logger.error("Error processing products db: %s", str(e))
             raise HTTPException(status_code=500, detail=str(e))
@@ -96,3 +131,6 @@ async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db
     except Exception as e:
         logger.error("Error processing CSV: %s", str(e)) 
         raise HTTPException(status_code=500, detail=str(e))
+    
+# Schema attribute for GraphQL
+schema = Schema(query=Query)
