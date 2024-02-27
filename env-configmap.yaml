@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  CELERY_BROKER_URL: amqp://admin:password@rabbitmq:5672/
+  DB_URI: postgresql://admin:password@db:5432/myapp
+  DB_URI_ALEMBIC: postgresql+psycopg2://admin:password@db:5432/myapp
+  POSTGRES_DB: myapp
+  POSTGRES_PASSWORD: password
+  POSTGRES_USER: admin
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: celery-env
+  name: env

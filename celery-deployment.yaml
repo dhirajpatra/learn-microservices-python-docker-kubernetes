@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: celery
+  name: celery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: celery
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.32.0 (HEAD)
+      labels:
+        io.kompose.network/myproject-network: "true"
+        io.kompose.service: celery
+    spec:
+      containers:
+        - env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: CELERY_BROKER_URL
+                  name: env
+            - name: CELERY_RESULT_BACKEND
+              value: redis://redis:6379/0
+            - name: DB_URI
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_URI
+                  name: env
+            - name: DB_URI_ALEMBIC
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_URI_ALEMBIC
+                  name: env
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: env
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: env
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: env
+          image: celery
+          name: celery
+          volumeMounts:
+            - mountPath: /app/celery_tasks
+              name: celery-claim0
+            - mountPath: /app/.env
+              name: celery-claim1
+      restartPolicy: Always
+      volumes:
+        - name: celery-claim0
+          persistentVolumeClaim:
+            claimName: celery-claim0
+        - name: celery-claim1
+          persistentVolumeClaim:
+            claimName: celery-claim1
