@@ -65,6 +65,7 @@ spec:
           volumeMounts:
             - mountPath: /entrypoint.sh
               name: web-claim0
+              readOnly: true
             - mountPath: /app/.env
               name: web-claim1
       restartPolicy: Always
@@ -72,6 +73,7 @@ spec:
         - name: web-claim0
           persistentVolumeClaim:
             claimName: web-claim0
+            readOnly: true
         - name: web-claim1
           persistentVolumeClaim:
             claimName: web-claim1

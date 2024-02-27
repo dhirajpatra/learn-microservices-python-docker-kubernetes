@@ -1,4 +1,4 @@
-# Microservices CSV Processing with Docker, FastAPI, Celery, PgSql, GraphQL, Elasticsearch, Rabbitmq, Redis
+# Microservices CSV Processing with Kubernetes, Docker, FastAPI, Celery, PgSql, GraphQL, Elasticsearch, Rabbitmq, Redis
 
 This a representation level template application to show how can we use microservices application using non blocking architecture.
 
@@ -277,3 +277,48 @@ or you can call for specific product
 ├── docker-compose.yml
 └── init-db.sql
 ```
+
+### Deploy with Kubernetes
+
+We are going to use the "kompose" tool to convert our docker-compose.yml to all deployments and services scripts.
+
+Start the minikube `minikube start`
+
+First you need to install kompose tool from https://kompose.io/ follow the instruction to install. And then you need to run the command `kompose convert` from where docker-compose.yml is.
+
+You can see many <container-name>-deployment.yml and <container-name>-service.yml files.
+Now you need to create env file all the enviroment variable by running `kubectl describe configmap env`
+
+Now to deploy all deployments run `kubectl apply -f path/to/deployment/directory`
+or you can run all deployment one by another
+```
+kubectl apply -f rabbitmq-deployment.yaml
+kubectl apply -f db-deployment.yaml
+kubectl apply -f redis-deployment.yaml
+kubectl apply -f elasticsearch-deployment.yaml
+kubectl apply -f web-deployment.yaml
+kubectl apply -f celery-deployment.yaml
+```
+To check the services run following commands
+
+To check the services running in your Kubernetes cluster, you can use the following commands:
+
+1. **Check Pods**:
+   `kubectl get pods`
+
+2. **Check Deployments**:
+   `kubectl get deployments`
+
+3. **Check Services**:
+   `kubectl get services`
+
+4. **Check StatefulSets**:
+   `kubectl get statefulsets`
+
+5. **Check DaemonSets**:
+   `kubectl get daemonsets`
+
+6. **Check ReplicaSets**:
+   `kubectl get replicasets`
+
+These commands will provide you with information about the resources running in your Kubernetes cluster, including pods, deployments, services, statefulsets, daemonsets, and replicasets. You can use them to verify the status and health of your services.
